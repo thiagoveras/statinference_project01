@@ -1,0 +1,79 @@
+---
+title: 'Statistical Inference: Project 01'
+author: "Thiago Veras"
+date: "July 22, 2015"
+output: html_document
+---
+
+## Exponential Distribution compared with Central Limit Theorem
+
+#### Overview
+
+In this project the exponential distribution was investigated and compared it with the Central Limit Theorem. 
+The investigation was focused on the distribution of averages of 40 exponentials. 
+Note that was necesserary to do a thousand simulations.
+
+#### Setting Workspace
+```{r setting_workspace}
+setwd("~/CESAR/BIGDATA/datasciencecoursera/statinference-030/project01")
+echo = TRUE
+set.seed(1)
+```
+
+#### Simulations
+##### Include English explanations of the simulations you ran, with the accompanying R code. Your explanations should make clear what the R code accomplishes.
+```{r}
+# Setting the variables as defined in the problem
+number_of_values <- 40
+number_of_interations <- 0.2
+number_of_simulations <- 1000
+
+# Creating the data simulation
+dataset <- matrix(rexp(number_of_values*number_of_simulations, number_of_interations), number_of_simulations)
+head(dataset, n = 10)
+
+row_means <- apply(dataset, 1, mean)
+head(row_means, n = 10)
+
+row_means_data_frame <-data.frame(row_means) # convert to data.frame for ggplot
+```
+
+#### Sample Mean versus Theoretical Mean
+##### Include figures with titles. In the figures, highlight the means you are comparing. Include text that explains the figures and what is shown on them, and provides appropriate numbers.
+```{r}
+theory_mean <- 1 / number_of_interations
+theory_mean
+
+actual_mean <- mean(row_means)
+round(actual_mean, digits=3)
+```
+
+#### Sample Variance versus Theoretical Variance
+##### Include figures (output from R) with titles. Highlight the variances you are comparing. Include text that explains your understanding of the differences of the variances.
+```{r}
+theory_standard_deviation <- ((1/number_of_interations) * (1/sqrt(number_of_values)))
+round(theory_standard_deviation, digits=3)
+
+actual_standard_deviation <- sd(row_means)
+round(actual_standard_deviation, digits=3)
+
+theory_variance <- theory_standard_deviation^2
+round(theory_variance, digits=3)
+
+actual_variance <- var(row_means)
+round(actual_variance, digits=3)
+```
+
+#### Distribution
+##### Via figures and text, explain how one can tell the distribution is approximately normal.
+```{r}
+library(ggplot2)
+ggplot(row_means_data_frame,aes(x=row_means)) +
+geom_histogram(binwidth = number_of_interations,fill="blue", color="black", aes(y = ..density..)) +
+labs(title="Density of 40 Numbers from Exponential Distribution", x="Mean of 40 Selections", y="Density") +
+geom_vline(xintercept=actual_mean,size=1.0, color="black") +
+stat_function(fun=dnorm,args=list(mean=actual_mean, sd=actual_standard_deviation),color = "red", size = 1.0) +
+geom_vline(xintercept=theory_mean, size=1.0, color="yellow", linetype = "longdash") +
+stat_function(fun=dnorm,args=list(mean=theory_mean, sd=theory_standard_deviation),color = "orange", size = 1.0)
+
+```
