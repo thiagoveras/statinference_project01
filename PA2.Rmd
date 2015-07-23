@@ -1,0 +1,117 @@
+---
+title: 'Statistical Inference: Project 02'
+author: "Thiago Veras"
+date: "July 23, 2015"
+output: word_document
+---
+
+## Analyzing the ToothGrowth data
+
+#### Overview
+
+The ToothGrowth data is the length of odontoblasts (teeth) in each of 10 guinea pigs at each of three dose levels of Vitamin C (0.5, 1, and 2 mg) with each of two delivery methods (orange juice or ascorbic acid).
+
+#### Setting Workspace
+```{r setting_workspace}
+setwd("~/CESAR/BIGDATA/datasciencecoursera/statinference-030/project02")
+echo = TRUE
+library(ggplot2)
+library(datasets)
+```
+
+#### Loading Data
+```{r loading_data}
+data("ToothGrowth")
+attach(ToothGrowth)
+raw_data <- ToothGrowth
+```
+
+#### Performing some basic exploratory data analyses
+```{r}
+# Getting the structure of the data
+str(raw_data)
+```
+- len: Tooth Length
+- supp: Supplement = Orange Juice (OJ) or Vitamin C (VC) 
+- dose: Dose (mg)
+
+The raw data contains 60 observations of these 3 variables.
+
+```{r}
+# Plotting the raw data to a basic exploratory data analyses
+ggplot(data = raw_data, 
+       aes(x = len, y = dose, color = supp)) +
+       ylim(0,2.5) +
+       xlim(0, 35) +
+       ylab("Dose") +
+       xlab("Length") +
+       geom_point() +
+       theme(legend.title=element_blank())
+```
+
+```{r}
+table(raw_data$dose, raw_data$supp)
+```
+
+#### Providing a basic summary of the data
+```{r}
+tooth_data <- raw_data
+tooth_data$dose <- factor(tooth_data$dose)
+summary(tooth_data)
+```
+
+#### Using confidence intervals and T tests to compare tooth growth by supp and dose 
+
+##### Comparing tooth growth by supplement
+```{r}
+oj_and_vc_dose_0.5mg <- tooth_data[tooth_data$dose==0.5,]
+oj_and_vc_dose_1.0mg <- tooth_data[tooth_data$dose==1.0,]
+oj_and_vc_dose_2.0mg <- tooth_data[tooth_data$dose==2.0,]
+
+# Testing oranje juice and vitamin c using 0.5 mg
+t_test_dose_0.5mg <- t.test(len ~ supp, data=oj_and_vc_dose_0.5mg, var.equal=FALSE)
+# Testing oranje juice and vitamin c using 1.0 mg
+t_test_dose_1.0mg <- t.test(len ~ supp, data=oj_and_vc_dose_1.0mg, var.equal=FALSE)
+# Testing oranje juice and vitamin c using 2.0 mg
+t_test_dose_2.0mg <- t.test(len ~ supp, data=oj_and_vc_dose_2.0mg, var.equal=FALSE)
+```
+Results:  
+***oranje juice and vitamin c using 0.5 mg*** = [ p-value: ***`r round(t_test_dose_0.5mg$p.value, digits=3)`*** | confidence interval (-): ***`r round(t_test_dose_0.5mg$conf.int[1], digits=3)`*** | confidence interval (+): ***`r round(t_test_dose_0.5mg$conf.int[2], digits=3)`*** ]  
+***oranje juice and vitamin c using 1.0 mg*** = [ p-value: ***`r round(t_test_dose_1.0mg$p.value, digits=3)`*** | confidence interval (-): ***`r round(t_test_dose_1.0mg$conf.int[1], digits=3)`*** | confidence interval (+): ***`r round(t_test_dose_1.0mg$conf.int[2], digits=3)`*** ]  
+***oranje juice and vitamin c using 2.0 mg*** = [ p-value: ***`r round(t_test_dose_2.0mg$p.value, digits=3)`*** | confidence interval (-): ***`r round(t_test_dose_2.0mg$conf.int[1], digits=3)`*** | confidence interval (+): ***`r round(t_test_dose_2.0mg$conf.int[2], digits=3)`*** ]  
+
+##### Comparing tooth growth by dose
+```{r}
+oj_dose_0.5mg_and_1.0mg <- tooth_data[((tooth_data$dose==0.5 | tooth_data$dose==1.0) & (tooth_data$supp=="OJ")),]
+oj_dose_0.5mg_and_2.0mg <- tooth_data[((tooth_data$dose==0.5 | tooth_data$dose==2.0) & (tooth_data$supp=="OJ")),]
+oj_dose_1.0mg_and_2.0mg <- tooth_data[((tooth_data$dose==1.0 | tooth_data$dose==2.0) & (tooth_data$supp=="OJ")),]
+vc_dose_0.5mg_and_1.0mg <- tooth_data[((tooth_data$dose==0.5 | tooth_data$dose==1.0) & (tooth_data$supp=="VC")),]
+vc_dose_0.5mg_and_2.0mg <- tooth_data[((tooth_data$dose==0.5 | tooth_data$dose==2.0) & (tooth_data$supp=="VC")),]
+vc_dose_1.0mg_and_2.0mg <- tooth_data[((tooth_data$dose==1.0 | tooth_data$dose==2.0) & (tooth_data$supp=="VC")),]
+
+# Test 0.5 mg and 1.0 mg using orange juice
+t_test_oj_dose_0.5mg_and_1.0mg <- t.test(len ~ dose, data=oj_dose_0.5mg_and_1.0mg, var.equal=FALSE)
+# Test 0.5 mg and 2.0 mg using orange juice
+t_test_oj_dose_0.5mg_and_2.0mg <- t.test(len ~ dose, data=oj_dose_0.5mg_and_2.0mg, var.equal=FALSE)
+# Test 1.0 mg and 2.0 mg using orange juice
+t_test_oj_dose_1.0mg_and_2.0mg <- t.test(len ~ dose, data=oj_dose_1.0mg_and_2.0mg, var.equal=FALSE)
+
+# Test 0.5 mg and 1.0 mg using vitamin c
+t_test_vc_dose_0.5mg_and_1.0mg <- t.test(len ~ dose, data=vc_dose_0.5mg_and_1.0mg, var.equal=FALSE)
+# Test 0.5 mg and 2.0 mg using vitamin c
+t_test_vc_dose_0.5mg_and_2.0mg <- t.test(len ~ dose, data=vc_dose_0.5mg_and_2.0mg, var.equal=FALSE)
+# Test 1.0 mg and 2.0 mg using vitamin c
+t_test_vc_dose_1.0mg_and_2.0mg <- t.test(len ~ dose, data=vc_dose_1.0mg_and_2.0mg, var.equal=FALSE)
+```
+Results:  
+***0.5 mg and 1.0 mg using orange juice*** = [ p-value: ***`r round(t_test_oj_dose_0.5mg_and_1.0mg$p.value, digits=3)`*** | confidence interval (-): ***`r round(t_test_oj_dose_0.5mg_and_1.0mg$conf.int[1], digits=3)`*** | confidence interval (+): ***`r round(t_test_oj_dose_0.5mg_and_1.0mg$conf.int[2], digits=3)`*** ]   
+***0.5 mg and 2.0 mg using orange juice*** = [ p-value: ***`r round(t_test_oj_dose_0.5mg_and_2.0mg$p.value, digits=3)`*** | confidence interval (-): ***`r round(t_test_oj_dose_0.5mg_and_2.0mg$conf.int[1], digits=3)`*** | confidence interval (+): ***`r round(t_test_oj_dose_0.5mg_and_2.0mg$conf.int[2], digits=3)`*** ]  
+***1.5 mg and 2.0 mg using orange juice*** = [ p-value: ***`r round(t_test_oj_dose_1.0mg_and_2.0mg$p.value, digits=3)`*** | confidence interval (-): ***`r round(t_test_oj_dose_1.0mg_and_2.0mg$conf.int[1], digits=3)`*** | confidence interval (+): ***`r round(t_test_oj_dose_1.0mg_and_2.0mg$conf.int[2], digits=3)`*** ]  
+  
+***0.5 mg and 1.0 mg using vitamin c*** = [ p-value: ***`r round(t_test_vc_dose_0.5mg_and_1.0mg$p.value, digits=3)`*** | confidence interval (-): ***`r round(t_test_vc_dose_0.5mg_and_1.0mg$conf.int[1], digits=3)`*** | confidence interval (+): ***`r round(t_test_vc_dose_0.5mg_and_1.0mg$conf.int[2], digits=3)`*** ]   
+***0.5 mg and 2.0 mg using vitamin c*** = [ p-value: ***`r round(t_test_vc_dose_0.5mg_and_2.0mg$p.value, digits=3)`*** | confidence interval (-): ***`r round(t_test_vc_dose_0.5mg_and_2.0mg$conf.int[1], digits=3)`*** | confidence interval (+): ***`r round(t_test_vc_dose_0.5mg_and_2.0mg$conf.int[2], digits=3)`*** ]  
+***1.5 mg and 2.0 mg using vitamin c*** = [ p-value: ***`r round(t_test_vc_dose_1.0mg_and_2.0mg$p.value, digits=3)`*** | confidence interval (-): ***`r round(t_test_vc_dose_1.0mg_and_2.0mg$conf.int[1], digits=3)`*** | confidence interval (+): ***`r round(t_test_vc_dose_1.0mg_and_2.0mg$conf.int[2], digits=3)`*** ] 
+
+#### Conclusion 
+
+There are clear indications that the supplement as the dosage have independent effects on the length of teeth.
